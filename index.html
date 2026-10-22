@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مستكشف الكواكب التفاعلي</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #161f33;
+            --text-color: #f3f4f6;
+            --accent-blue: #3b82f6;
+            --accent-purple: #a855f7;
+            --accent-secret: #ef4444;
+            --accent-success: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* نافذة الترحيب التفاعلية */
+        #welcome-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0b0f19 0%, #1e1b4b 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .welcome-box {
+            background: rgba(22, 31, 51, 0.95);
+            padding: 40px;
+            border-radius: 16px;
+            border: 2px solid var(--accent-blue);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+        }
+
+        .welcome-box h1 {
+            margin-bottom: 20px;
+            color: var(--text-color);
+            font-size: 2rem;
+        }
+
+        .welcome-box input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #374151;
+            background-color: #1f2937;
+            color: white;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            text-align: center;
+            outline: none;
+        }
+
+        .welcome-box input:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+
+        .welcome-box button {
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .welcome-box button:hover {
+            background-color: #2563eb;
+            transform: scale(1.05);
+        }
+
+        /* المحتوى الرئيسي */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-top: 20px;
+        }
+
+        #user-greeting {
+            font-size: 1.5rem;
+            color: #60a5fa;
+            margin-bottom: 10px;
+            font-weight: bold;
+            min-height: 35px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(to left, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* لوحة التحكم والأزرار */
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+            background: rgba(22, 31, 51, 0.5);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #1e293b;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            background-color: #1f2937;
+            color: #9ca3af;
+        }
+
+        .btn:hover {
+            background-color: #374151;
+            color: white;
+        }
+
+        .btn.active {
+            background-color: var(--accent-blue);
+            color: white;
+        }
+
+        .btn-secret {
+            background-color: #451a1a;
+            color: #f87171;
+            border: 1px solid var(--accent-secret);
+        }
+
+        .btn-secret:hover {
+            background-color: var(--accent-secret);
+            color: white;
+        }
+
+        /* مختبر صناعة الأجرام */
+        .creator-section {
+            background: #1e1b4b;
+            border: 2px dashed #4338ca;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 40px;
+        }
+
+        .creator-section h2 {
+            margin-bottom: 15px;
+            color: #c084fc;
+            font-size: 1.4rem;
+        }
+
+        .grid-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-size: 0.9rem;
+            color: #9ca3af;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 10px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            color: white;
+            outline: none;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--accent-purple);
+        }
+
+        .btn-submit {
+            background-color: var(--accent-success);
+            color: white;
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-submit:hover {
+            background-color: #059669;
+        }
+
+        /* شبكة الكواكب */
+        .planets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 14px;
+            padding: 25px;
+            border: 1px solid #1e293b;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            border-color: #334155;
+        }
+
+        /* تمييز نوع الجرم بالألوان */
+        .card[data-type="rocky"] { border-top: 4px solid #f97316; }
+        .card[data-type="gas"] { border-top: 4px solid #3b82f6; }
+        .card[data-type="dwarf"] { border-top: 4px solid #a855f7; }
+        .card[data-type="custom-planet"] { border-top: 4px solid #10b981; }
+        .card[data-type="custom-moon"] { border-top: 4px solid #eab308; }
+        .card[data-type="custom-star"] { border-top: 4px solid #ef4444; }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .planet-name {
+            font-size: 1.6rem;
+            font-weight: bold;
+        }
+
+        .planet-tag {
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: #1f2937;
+            color: #9ca3af;
+        }
+
+        .info-list {
+            list-style: none;
+            margin-bottom: 15px;
+        }
+
+        .info-list li {
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+            color: #cbd5e1;
+        }
+
+        .info-list strong {
+            color: #94a3b8;
+        }
+
+        .planet-desc {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #94a3b8;
+            margin-bottom: 15px;
+        }
+
+        /* صورة مخصصة للأجرام المرفوعة */
+        .uploaded-img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #334155;
+        }
+
+        /* ملف سري */
+        .secret-file {
+            background-color: #2d1616;
+            border: 1px dashed var(--accent-secret);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .secret-file h4 {
+            color: #f87171;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .secret-file p {
+            font-size: 0.85rem;
+            color: #fca5a5;
+            line-height: 1.4;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- واجهة الدخول التفاعلية -->
+    <div id="welcome-overlay">
+        <div class="welcome-box">
+            <h1>🚀 مرحباً بك في مستكشف الفضاء التفاعلي</h1>
+            <p style="color: #9ca3af; margin-bottom: 20px;">من فضلك أدخل اسمك لبدء المهمة الاستكشافية:</p>
+            <input type="text" id="username-input" placeholder="اكتب اسمك هنا..." autocomplete="off">
+            <br>
+            <button onclick="startExploration()">ابدأ الاستكشاف 🪐</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div id="user-greeting"></div>
+            <h1>الموسوعة التفاعلية لأجرام النظام الشمسي</h1>
+            <p style="color: #94a3b8;">استكشف الكون، اكشف الملفات السرية، واصنع جرمك الخاص للمرح والتسلية!</p>
+        </header>
+
+        <div class="controls">
+            <button class="btn active" onclick="filterPlanets('all', this)">كل الأجرام</button>
+            <button class="btn" onclick="filterPlanets('rocky', this)">كواكب صخرية</button>
+            <button class="btn" onclick="filterPlanets('gas', this)">كواكب غازية وعملاقة</button>
+            <button class="btn" onclick="filterPlanets('dwarf', this)">كواكب قزمة</button>
+            <button class="btn" onclick="filterPlanets('custom', this)">أجرامك المبتكرة 🎮</button>
+            <button class="btn btn-secret" onclick="toggleAllSecrets()">⚠️ كشف الملفات السرية</button>
+        </div>
+
+        <section class="creator-section">
+            <h2>🎮 المختبر الكوني التفاعلي (اصنع جرمك الخاص!)</h2>
+            <div class="grid-form">
+                <div class="form-group">
+                    <label>اسم الجرم</label>
+                    <input type="text" id="custom-name" placeholder="مثال: كوكب الزمرد">
+                </div>
+                <div class="form-group">
+                    <label>نوع الجرم</label>
+                    <select id="custom-type">
+                        <option value="custom-planet">كوكب مبتكر</option>
+                        <option value="custom-moon">قمر شخصي</option>
+                        <option value="custom-star">نجم مشع</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>مدة الدوران / نصف القطر</label>
+                    <input type="text" id="custom-orbit" placeholder="مثال: 500 يوم أرضي">
+                </div>
+                <div class="form-group">
+                    <label>رفع صورة الجرم (للمرح)</label>
+                    <input type="file" id="custom-image" accept="image/*">
+                </div>
+            </div>
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label>الوصف الكوني العام للجرم</label>
+                <textarea id="custom-desc" rows="2" placeholder="اكتب نبذة فكاهية أو علمية عن جرمك المبتكر..."></textarea>
+            </div>
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label>🤫 ملف سري وغامض عن هذا الجرم</label>
+                <input type="text" id="custom-secret" placeholder="اكتب حقيقة مخفية لا يعرفها أحد عنه!">
+            </div>
+            <button class="btn btn-submit" onclick="createNewBody()">🚀 إطلاق الجرم في الفضاء</button>
+        </section>
+
+        <main class="planets-grid" id="planets-container">
+            <div class="card" data-type="rocky">
+                <div class="card-header">
+                    <span class="planet-name">عطارد</span>
+                    <span class="planet-tag">كوكب صخري</span>
+                </div>
+                <ul class="info-list">
+                    <li><strong>الترتيب:</strong> 1 (الأقرب للشمس)</li>
+                    <li><strong>السنة الفلكية:</strong> 88 يوم أرضي</li>
+                    <li><strong>عدد الأقمار:</strong> لا يوجد</li>
+                </ul>
+                <p class="planet-desc">أصغر كواكب المجموعة الشمسية وأسرعها دوراناً حول الشمس، ويمتاز بتقلبات حرارية حادة بين ليله ونهاره.</p>
+                <div class="secret-file">
+                    <h4>⚠️ ملف سري مخفي:</h4>
+                    <p>على الرغم من قربه الشديد من الشمس وحرارته الحارقة، اكتشفت الرادارات وجود جليد مائي سميك في قاع الفوهات العميقة عند أقطابه التي لا تصلها أشعة الشمس أبداً!</p>
+                </div>
+            </div>
+
+            <div class="card" data-type="rocky">
+                <div class="card-header">
+                    <span class="planet-name">الزهرة</span>
+                    <span class="planet-tag">كوكب صخري</span>
+                </div>
+                <ul class="info-list">
+                    <li><strong>الترتيب:</strong> 2</li>
+                    <li><strong>السنة الفلكية:</strong> 225 يوم أرضي</li>
+                    <li><strong>عدد الأقمار:</strong> لا يوجد</li>
+                </ul>
+                <p class="planet-desc">توأم الأرض من حيث الحجم والكتلة، لكنه يملك غلافاً جوياً كثيفاً جداً يحبس الحرارة بشكل خانق.</p>
+                <div class="secret-file">
+                    <h4>⚠️ ملف سري مخفي:</h4>
+                    <p>الكوكب يدور حول نفسه بشكل معكوس مقارنة بباقي الكواكب، كما أن يومه أطول من سنته! أي أنه يستغرق وقتاً للدوران حول نفسه أطول من دورانه حول الشمس.</p>
+                </div>
+            </div>
+
+            <div class="card" data-type="rocky">
+                <div class="card-header">
+                    <span class="planet-name">الأرض</span>
+                    <span class="planet-tag">كوكب صخري</span>
+                </div>
+                <ul class="info-list">
+                    <li><strong>الترتيب:</strong> 3</li>
+                    <li><strong>السنة الفلكية:</strong> 365.25 يوم</li>
+                    <li><strong>عدد الأقمار:</strong> 1 (القمر)</li>
+                </ul>
+                <p class="planet-desc">كوكبنا المائي الفريد، وهو الجرم الوحيد المعروف حتى الآن في الكون بأكمله الذي تتوفر فيه مقومات الحياة والغطاء الحيوي.</p>
+                <div class="secret-file">
+                    <h4>⚠️ ملف سري مخفي:</h4>
+                    <p>الدرع المغناطيسي للأرض ليس ثابتاً، بل يتحرك وينقلب بالكامل كل بضع مئات آلاف السنين، مما يجعل الشمال المغناطيسي يصبح جنوباً والعكس!</p>
+                </div>
+            </div>
+
+            <div class="card" data-type="rocky">
+                <div class="card-header">
+                    <span class="planet-name">المريخ</span>
+                    <span class="planet-tag">كوكب صخري</span>
+                </div>
+                <ul class="info-list">
+                    <li><strong>الترتيب:</strong> 4</li>
+                    <li><strong>السنة الفلكية:</strong> 687 يوم أرضي</li>
+                    <li><strong>عدد الأقمار:</strong> 2</li>
+                </ul>
+                <p class="planet-desc">الكوكب الأحمر الشهير، المليء بأكسيد الحديد (الصدأ) على سطحه، وهو الهدف الأول للبشرية لبناء مستعمرات مستقبلية.</p>
+                <div class="secret-file">
+                    <h4>⚠️ ملف سري مخفي:</h4>
+                    <p>يحتوي المريخ على بركان "أوليمبوس مونز"، وهو أضخم بركان تم اكتشافه في النظام الشمسي، حيث يبلغ ارتفاعه 3 أضعاف ارتفاع جبل إيفرست!</p>
+                </div>
+            </div>
+
+            <div class="card" data-type="gas">
+                <div class="card-header">
+                    <span class="planet-name">المشتري</span>
+                    <span class="planet-tag">عملاق غازي</span>
+                </div>
+                <ul class="info-list">
+                    <li><strong>الترتيب:</strong> 5</li>
+                    <li><strong>السنة الفلكية:</strong> 12 سنة أرضية</li>
+                    <li><strong>عدد الأقمار:</strong> 95 قمر مؤكد</li>
+                </ul>
+                <p class="planet-desc">عملاق المجموعة الشمسية وأكبر كواكبها على الإطلاق، كتلته تفوق كتلة جميع الكواكب الأخرى مجتمعة بمرتين ونصف.</p>
+                <div class="secret-file">
+                    <h4>⚠️ ملف سري مخفي:</h4>
+                    <p>"البقعة الحمراء العظيمة" على سطحه هي في الواقع إعصار هائل وضخم أكبر من حجم كوكب الأرض بأكمله، ويعصف بالكوكب منذ أكثر من 350 عاماً دون توقف!</p>
+                </div>
+            </div>
+
+            <div class="card" data-type="gas">
+                <div class="card-header">
+                    <span class="planet-name">زحل</span>
+                    <span class="planet-tag">عملاق غازي</span>
+                </div>
+                <ul class="info-list">
+                    <li><strong>الترتيب:</strong> 6</li>
+                    <li><strong>السنة الفلكية:</strong> 29 سنة أرضية</li>
+                    <li><strong>عدد الأقمار:</strong> 146 قمر</li>
+                </ul>
+                <p class="planet-desc">أيقونة الجمال الكوني، المشهور بنظامه الحلقي المذهل المكون من قطع الجليد والصخور والغبار الفضائي.</p>
+                <div class="secret-file">
+                    <h4>⚠️ ملف سري مخفي:</h4>
+                    <p>كثافة كوكب زحل أقل من كثافة الماء! هذا يعني أنه لو وجد محيط مائي ضخم يتسع لكوكب زحل، لطفا الكوكب على سطح الماء ولم يغرق أبداً.</p>
+                </div>
+            </div>
+
+            <div class="card" data-type="gas">
+                <div class="card-header">
+                    <span class="planet-name">أورانوس</span>
+                    <span class="planet-tag">عملاق جليدي</span>
+                </div>
+                <ul class="info-list">
+                    <li><strong>الترتيب:</strong> 7</li>
+                    <li><strong>السنة الفلكية:</strong> 84 سنة أرضية</li>
+                    <li><strong>عدد الأقمار:</strong> 28 قمر</li>
+                </ul>
+                <p class="planet-desc">كوكب غازي بارد جداً ذو لون أزرق مخضر باهت بسبب غاز الميثان، ويمتاز بمحور دوران غريب جداً.</p>
+                <div class="secret-file">
+                    <h4>⚠️ ملف سري مخفي:</h4>
+                    <p>أورانوس يتدحرج على جانبه! محور دورانه يميل بزاوية 98 درجة، مما يجعله يبدو وكأنه كرة تتدحرج في مدارها حول الشمس، مما ينتج عنه فصول غريبة يستمر فيها الليل أو النهار لـ 42 عاماً متواصلة!</p>
+                </div>
+            </div>
+
+            <div class="card" data-type="gas">
+                <div class="card-header">
+                    <span class="planet-name">نبتون</span>
+                    <span class="planet-tag">عملاق جليدي</span>
+                </div>
+                <ul class="info-list">
+                    <li><strong>الترتيب:</strong> 8 (الأبعد حالياً)</li>
+                    <li><strong>السنة الفلكية:</strong> 165 سنة أرضية</li>
+                    <li><strong>عدد الأقمار:</strong> 16 قمر</li>
+                </ul>
+                <p class="planet-desc">الكوكب الأزرق الداكن العاصف، وهو أبعد الكواكب الغازية الكبرى عن الشمس، ويمتاز برياحه الشديدة الفائقة لسرعة الصوت.</p>
+                <div class="secret-file">
+                    <h4>⚠️ ملف سري مخفي:</h4>
+                    <p>الضغط الهائل في أعماق الغلاف الجوي لنبتون وأورانوس يقوم بكسر جزيئات الميثان لتتحول ذرات الكربون إلى ألماس حقيقي، مما يتسبب في "أمطار من الألماس" تتساقط نحو قلب الكوكب!</p>
+                </div>
+            </div>
+
+            <div class="card" data-type="dwarf">
+                <div class="card-header">
+                    <span class="planet-name">بلوتو</span>
+                    <span class="planet-tag">كوكب قزم</span>
+                </div>
+                <ul class="info-list">
+                    <li><strong>التصنيف القديم:</strong> الكوكب التاسع (قبل طرده عام 2006)</li>
+                    <li><strong>السنة الفلكية:</strong> 248 سنة أرضية</li>
+                    <li><strong>عدد الأقمار:</strong> 5 أقمار</li>
+                </ul>
+                <p class="planet-desc">جرم جليدي صغير يقع في حزام كايبر. تم تجريده من لقب كوكب رئيسي وتحويله إلى كوكب قزم لعدم قدرته على تنظيف مداره.</p>
+                <div class="secret-file">
+                    <h4>⚠️ ملف سري مخفي:</h4>
+                    <p>يحتوي بلوتو على منطقة جليدية ضخمة على شكل "قلب ناصع البياض" تُعرف باسم منطقة تومبو، واكتشف العلماء أن هذا القلب يخفي تحته محيطاً سائلاً شبه متجمد ينبض بالنشاط الجيولوجي!</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function startExploration() {
+            const nameInput = document.getElementById('username-input').value.trim();
+            const username = nameInput ? nameInput : "مستكشف الفضاء الشجاع";
+            document.getElementById('user-greeting').innerText = `🚀 مرحباً بالقائد: ${username}... تم فتح نظام البيانات!`;
+            const overlay = document.getElementById('welcome-overlay');
+            overlay.style.opacity = '0';
+            overlay.style.visibility = 'hidden';
+        }
+
+        function filterPlanets(category, button) {
+            document.querySelectorAll('.controls .btn').forEach(btn => {
+                if(!btn.classList.contains('btn-secret')) btn.classList.remove('active');
+            });
+            if(button) button.classList.add('active');
+
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                const type = card.getAttribute('data-type');
+                if (category === 'all') {
+                    card.style.display = 'block';
+                } else if (category === 'rocky' && type === 'rocky') {
+                    card.style.display = 'block';
+                } else if (category === 'gas' && type === 'gas') {
+                    card.style.display = 'block';
+                } else if (category === 'dwarf' && type === 'dwarf') {
+                    card.style.display = 'block';
+                } else if (category === 'custom' && type.startsWith('custom-')) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        let secretsVisible = false;
+        function toggleAllSecrets() {
+            secretsVisible = !secretsVisible;
+            const secretFiles = document.querySelectorAll('.secret-file');
+            const secretBtn = document.querySelector('.btn-secret');
+            
+            secretFiles.forEach(file => {
+                file.style.display = secretsVisible ? 'block' : 'none';
+            });
+
+            if(secretsVisible) {
+                secretBtn.innerText = "🔒 حجب الملفات السرية";
+                secretBtn.style.backgroundColor = "#ef4444";
+                secretBtn.style.color = "white";
+            } else {
+                secretBtn.innerText = "⚠️ كشف الملفات السرية";
+                secretBtn.style.backgroundColor = "#451a1a";
+                secretBtn.style.color = "#f87171";
+            }
+        }
+
+        function createNewBody() {
+            const name = document.getElementById('custom-name').value.trim();
+            const type = document.getElementById('custom-type').value;
+            const orbit = document.getElementById('custom-orbit').value.trim();
+            const desc = document.getElementById('custom-desc').value.trim();
+            const secret = document.getElementById('custom-secret').value.trim();
+            const imageInput = document.getElementById('custom-image');
+
+            if (!name || !desc) {
+                alert("من فضلك أدخل اسم الجرم ووصفه لإطلاقه بنجاح!");
+                return;
+            }
+
+            let typeText = "كوكب مبتكر";
+            if(type === 'custom-moon') typeText = "قمر شخصي";
+            if(type === 'custom-star') typeText = "نجم مشع";
+
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.setAttribute('data-type', type);
+            card.style.animation = 'fadeIn 0.6s ease';
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <span class="planet-name">${name}</span>
+                    <span class="planet-tag">${typeText}</span>
+                </div>
+                <ul class="info-list">
+                    <li><strong>المدار / الحركة:</strong> ${orbit ? orbit : 'غير معروف كلياً'}</li>
+                    <li><strong>الحالة الاستكشافية:</strong> جرم مصنع ومصنف ومكتشف من قبلك!</li>
+                </ul>
+                <p class="planet-desc">${desc}</p>
+                <div class="secret-file" style="display: ${secretsVisible ? 'block' : 'none'};">
+                    <h4>⚠️ ملف سري مخفي:</h4>
+                    <p>${secret ? secret : 'لا توجد أسرار تم إدخالها حول هذا الجرم الكوني المبتكر.'}</p>
+                </div>
+            `;
+
+            if (imageInput.files && imageInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgElement = document.createElement('img');
+                    imgElement.src = e.target.result;
+                    imgElement.className = 'uploaded-img';
+                    card.insertBefore(imgElement, card.firstChild);
+                }
+                reader.readAsDataURL(imageInput.files[0]);
+            }
+
+            const container = document.getElementById('planets-container');
+            container.insertBefore(card, container.firstChild);
+
+            document.getElementById('custom-name').value = '';
+            document.getElementById('custom-orbit').value = '';
+            document.getElementById('custom-desc').value = '';
+            document.getElementById('custom-secret').value = '';
+            imageInput.value = '';
+
+            alert(`🚀 نجاح! تم إطلاق وتعميم جرمك الكوني الجديد باسم: (${name}) في أرجاء الفضاء والموقع بنجاح!`);
+        }
+    </script>
+</body>
+</html>
